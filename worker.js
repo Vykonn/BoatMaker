@@ -14,7 +14,7 @@ with open("HullParameterization.py", "wb") as f:
     f.write(await response.bytes())
 `)
 await pyodide.pyimport("HullParameterization");
-postMessage("startready")
+postMessage(["startready", false])
 let currentTask;
 self.onmessage = async (event) => {
     pyodide.globals.set("string_data", JSON.stringify(event.data[0]));
