@@ -20,6 +20,7 @@ self.onmessage = async (event) => {
     pyodide.globals.set("string_data", JSON.stringify(event.data[0]));
     if (event.data[1] == true) {
         try {
+        console.log("Starting download render process!")
         pyodide.runPython(`
         import numpy as np
         import json
