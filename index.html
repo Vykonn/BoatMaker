@@ -66,6 +66,7 @@
 		    	console.log(event.data[0])
 			overlay.style.display = "none";
 		    }
+	            else {
                     if (event.data == "startready") {
 	                    console.log("Preperation")
 	                    document.dispatchEvent(primeData)
@@ -85,6 +86,7 @@
 		                    console.log("Confirmation from worker")
 			    }
                     }
+		    }
                 };
             }
             worker.postMessage(values);
