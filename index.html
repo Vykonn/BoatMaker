@@ -65,6 +65,7 @@
 		    if (event.data[1] == true) {
 		    	console.log(event.data[0])
 			overlay.style.display = "none";
+			document.dispatchEvent(readyEvent);
 		    }
 	            else {
                     if (event.data[0] == "startready") {
