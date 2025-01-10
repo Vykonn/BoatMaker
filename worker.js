@@ -17,8 +17,11 @@ await pyodide.pyimport("HullParameterization");
 postMessage("startready")
 let currentTask;
 self.onmessage = async (event) => {
-    pyodide.globals.set("string_data", JSON.stringify(event.data));
-
+    pyodide.globals.set("string_data", JSON.stringify(event.data[0]));
+    if (event.data[1] == true) {
+        //Final Export Script
+    }
+    else {
     //Real Stuff
     try {
     pyodide.runPython(`
@@ -43,6 +46,6 @@ self.onmessage = async (event) => {
         let result = false
         self.postMessage(result);
     }
-
+    }
 
 };
