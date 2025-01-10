@@ -62,23 +62,23 @@
                     console.error("Worker is in pain!");
                 };
                 worker.onmessage = (event) => {
-		    if (Array.isArray(event.data) == true) {
+		    if (event.data[1] == true) {
 		    	console.log(event.data[0])
 			overlay.style.display = "none";
 		    }
 	            else {
-                    if (event.data == "startready") {
+                    if (event.data[0] == "startready") {
 	                    console.log("Preperation")
 	                    document.dispatchEvent(primeData)
                     }
                     else {
-			    if (event.data == false ){
+			    if (event.data[0] == false ){
 				    console.error("Something went wrong! Please change values.")
 				    alert("That didn't work. Undo whatever you just did.")
 				    document.dispatchEvent(readyEvent);
 			    }
 			    else {
-		                    stldata = event.data
+		                    stldata = event.data[0]
 		                    console.log(stldata)
 		                    stldatabuffer = stldata.buffer
 		                    ready = true
