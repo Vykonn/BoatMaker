@@ -258,7 +258,7 @@
 				}
 		sendValuesToWorker(boatObject)
 		const extravalues = {
-			Download: function() {console.log("download")}
+			"Download STL": function() {console.log("download")}
 		}
 		const gui = new GUI();
 		gui.hide()
@@ -307,7 +307,7 @@
                 gui.add( boatObject, 'Bsb' );
                 gui.add( boatObject, 'Lsbm' );
                 gui.add( boatObject, 'Rsb' );
-		gui.add( extravalues, 'Download');
+		gui.add( extravalues, 'Download STL');
                 gui.onFinishChange( event => {
                     if(ready==true){sendValuesToWorker([boatObject, false])}
                     overlay.style.display = "block";
