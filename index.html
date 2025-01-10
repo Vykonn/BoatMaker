@@ -294,10 +294,14 @@
                      gui.hide()
                 });
 				//
-				document.addEventListener('readyEvent', () => {
+		document.addEventListener('readyEvent', () => {
                     let stlfinal = loader.parse(stldatabuffer)
                     mesh.geometry.dispose();
                     mesh.geometry = stlfinal
+		    var box = new THREE.Box3().setFromObject( mesh );
+  	            var center = new THREE.Vector3();
+  	            mesh.getCenter( center );
+                    obj.position.sub( center ); 
                     overlay.style.display = "none";
                     gui.show()
                 });
