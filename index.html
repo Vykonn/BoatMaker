@@ -300,8 +300,8 @@
                     mesh.geometry = stlfinal
 		    var box = new THREE.Box3().setFromObject( mesh );
   	            var center = new THREE.Vector3();
-  	            mesh.getCenter( center );
-                    obj.position.sub( center ); 
+  	            box.getCenter( center );
+                    mesh.position.sub( center ); 
                     overlay.style.display = "none";
                     gui.show()
                 });
