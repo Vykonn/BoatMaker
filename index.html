@@ -62,6 +62,7 @@
                     console.error("Worker is in pain!");
                 };
                 worker.onmessage = (event) => {
+		    console.log(event.data)
 		    if (event.data[1] == true) {
 		    	console.log(event.data[0])
 			overlay.style.display = "none";
