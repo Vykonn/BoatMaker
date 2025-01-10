@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Boat Designer 2000</title>
+        <style>
+            body { margin:0;}
+            #overlay {
+            position: fixed;
+            display: block;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 5;
+            cursor: pointer;
+            }
+
+            #text{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 50px;
+            color: white;
+            transform: translate(-50%,-50%);
+            -ms-transform: translate(-50%,-50%);
+            }
+        </style>
+        <script type="importmap">
+        {
+            "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@v0.172.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.172.0/examples/jsm/"
+            }
+        }
+        </script>
+        <script type="module">
+            import * as THREE from 'three';
+            import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+            import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+            import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			import { Water } from 'three/addons/objects/Water.js';
+			import { Sky } from 'three/addons/objects/Sky.js';
+			const overlay = document.getElementById("overlay")
+			const readyEvent = new Event('readyEvent');
+			const primeData = new Event('primeData');
+			let ready = false
+			let worker
+			let stldata
+			let stldatabuffer
+			function sendValuesToWorker(values) {
+            if (!worker) {
+                    worker = new Worker('worker.js', { type: 'module' });
+                    worker.onerror = (event) => {
+                    console.error("Worker is in pain!");
+                };
+                worker.onmessage = (event) => {
+                    if (event.data == "startready") {
+                    console.log("Preperation")
+                    document.dispatchEvent(primeData)
+                    }
+                    else {
+                    stldata = event.data
+                    console.log(stldata)
+                    stldatabuffer = stldata.buffer
+                    ready = true
+                    document.dispatchEvent(readyEvent);
+                    console.log("Confirmation from worker")
+                    }
+                };
+            }
+            worker.postMessage(values);
+            }
+			let container, stats;
+			let camera, scene, renderer;
+			let controls, water, sun, mesh;
+			init();
+			function init() {
+
+				container = document.body;
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( animate );
+				renderer.toneMapping = THREE.ACESFilmicToneMapping;
+				renderer.toneMappingExposure = 0.5;
+				container.appendChild( renderer.domElement );
+
+				//
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 55, window.innerWidth / window.innerHeight, 1, 20000 );
+				camera.position.set( 30, 30, 100 );
+
+				//
+
+				sun = new THREE.Vector3();
+
+				// Water
+
+				const waterGeometry = new THREE.PlaneGeometry( 10000, 10000 );
+
+				water = new Water(
+					waterGeometry,
+					{
+						textureWidth: 512,
+						textureHeight: 512,
+						waterNormals: new THREE.TextureLoader().load( 'waternormals.jpg', function ( texture ) {
+
+							texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+						} ),
+						sunDirection: new THREE.Vector3(),
+						sunColor: 0xffffff,
+						waterColor: 0x001e0f,
+						distortionScale: 3.7,
+						fog: scene.fog !== undefined
+					}
+				);
+
+				water.rotation.x = - Math.PI / 2;
+
+				scene.add( water );
+
+				// Skybox
+
+				const sky = new Sky();
+				sky.scale.setScalar( 10000 );
+				scene.add( sky );
+
+				const skyUniforms = sky.material.uniforms;
+
+				skyUniforms[ 'turbidity' ].value = 10;
+				skyUniforms[ 'rayleigh' ].value = 2;
+				skyUniforms[ 'mieCoefficient' ].value = 0.005;
+				skyUniforms[ 'mieDirectionalG' ].value = 0.8;
+
+				const parameters = {
+					elevation: 2,
+					azimuth: 180
+				};
+
+				const pmremGenerator = new THREE.PMREMGenerator( renderer );
+				const sceneEnv = new THREE.Scene();
+
+				let renderTarget;
+
+				function updateSun() {
+
+					const phi = THREE.MathUtils.degToRad( 90 - parameters.elevation );
+					const theta = THREE.MathUtils.degToRad( parameters.azimuth );
+
+					sun.setFromSphericalCoords( 1, phi, theta );
+
+					sky.material.uniforms[ 'sunPosition' ].value.copy( sun );
+					water.material.uniforms[ 'sunDirection' ].value.copy( sun ).normalize();
+
+					if ( renderTarget !== undefined ) renderTarget.dispose();
+
+					sceneEnv.add( sky );
+					renderTarget = pmremGenerator.fromScene( sceneEnv );
+					scene.add( sky );
+
+					scene.environment = renderTarget.texture;
+
+				}
+
+				updateSun();
+
+				//
+                const loader = new STLLoader()
+
+				const geometry = new THREE.BoxGeometry( 10, 10, 10 );
+				const material = new THREE.MeshStandardMaterial( { roughness: 0 } );
+
+				mesh = new THREE.Mesh( geometry, material );
+				mesh.position.y = 30
+				mesh.rotation.x = Math.PI / -2;
+				scene.add( mesh );
+
+				//
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.target.set( 0, 30, 0 );
+				controls.minDistance = 1.0;
+				controls.maxDistance = 1000.0;
+				controls.update();
+
+				// GUI
+				const boatObject = {
+                    LOA: 10,
+                    Lb: 0.5,
+                    Ls: 0.45,
+                    Bd: 0.176,
+                    Dd: 0.0885,
+                    Bs: 0.45,
+                    WL: 0.71,
+                    Bc: 0.173,
+                    Beta: 2,
+                    Rc: 0.27,
+                    Rk: 1,
+                    BOW_A: -0.76,
+                    BOW_B: 1.15,
+                    BK: 0.6,
+                    Kappa_BOW: 0.175673307,
+                    DELTA_BOW_A: 0,
+                    DELTA_BOW_B: -0.33,
+                    DRIFT_A: 0,
+                    DRIFT_B: 0.3,
+                    DRIFT_C: 15,
+                    bit_EP_S: 0,
+                    bit_EP_T: 0,
+                    TRANS_A: 0.35,
+                    SK: 0.76,
+                    Kappa_STERN: 0.1,
+                    DELTA_STERN_A: 0,
+                    DELTA_STERN_B: 0.66,
+                    Beta_trans: 3,
+                    Bc_trans: 0.02,
+                    Rc_trans:0.2,
+                    Rk_trans:0.1,
+                    bit_BB: 1,
+                    bit_SB: 1,
+                    Lbb: 0.031911138,
+                    Hbb: 0.85,
+                    Bbb: 0.17,
+                    Lbbm: -0.7,
+                    Rbb: 0.304829414,
+                    Kapp_SB: 0.8,
+                    Lsb: 0.029,
+                    HsbOA: 0.7,
+                    Hsb: 0.55,
+                    Bsb: 0.11,
+                    Lsbm: -0.5,
+                    Rsb: 0.110869206
+				}
+				sendValuesToWorker(boatObject)
+				const gui = new GUI();
+				gui.hide()
+                gui.add( boatObject, 'LOA' );
+                gui.add( boatObject, 'Lb' );
+                gui.add( boatObject, 'Ls' );
+                gui.add( boatObject, 'Bd' );
+                gui.add( boatObject, 'Dd' );
+                gui.add( boatObject, 'Bs' );
+                gui.add( boatObject, 'WL' );
+                gui.add( boatObject, 'Bc' );
+                gui.add( boatObject, 'Beta' );
+                gui.add( boatObject, 'Rc' );
+                gui.add( boatObject, 'Rk' );
+                gui.add( boatObject, 'BOW_A' );
+                gui.add( boatObject, 'BOW_B' );
+                gui.add( boatObject, 'BK' );
+                gui.add( boatObject, 'Kappa_BOW' );
+                gui.add( boatObject, 'DELTA_BOW_A' );
+                gui.add( boatObject, 'DELTA_BOW_B' );
+                gui.add( boatObject, 'DRIFT_A' );
+                gui.add( boatObject, 'DRIFT_B' );
+                gui.add( boatObject, 'DRIFT_C' );
+                gui.add( boatObject, 'bit_EP_S' );
+                gui.add( boatObject, 'bit_EP_T' );
+                gui.add( boatObject, 'TRANS_A' );
+                gui.add( boatObject, 'SK' );
+                gui.add( boatObject, 'Kappa_STERN' );
+                gui.add( boatObject, 'DELTA_STERN_A' );
+                gui.add( boatObject, 'DELTA_STERN_B' );
+                gui.add( boatObject, 'Beta_trans' );
+                gui.add( boatObject, 'Bc_trans' );
+                gui.add( boatObject, 'Rc_trans' );
+                gui.add( boatObject, 'Rk_trans' );
+                gui.add( boatObject, 'bit_BB' );
+                gui.add( boatObject, 'bit_SB' );
+                gui.add( boatObject, 'Lbb' );
+                gui.add( boatObject, 'Hbb' );
+                gui.add( boatObject, 'Bbb' );
+                gui.add( boatObject, 'Lbbm' );
+                gui.add( boatObject, 'Rbb' );
+                gui.add( boatObject, 'Kapp_SB' );
+                gui.add( boatObject, 'Lsb' );
+                gui.add( boatObject, 'HsbOA' );
+                gui.add( boatObject, 'Hsb' );
+                gui.add( boatObject, 'Bsb' );
+                gui.add( boatObject, 'Lsbm' );
+                gui.add( boatObject, 'Rsb' );
+                gui.onFinishChange( event => {
+                    if(ready==true){sendValuesToWorker(boatObject)}
+                    overlay.style.display = "block";
+                     gui.hide()
+                });
+				//
+				document.addEventListener('readyEvent', () => {
+                    let stlfinal = loader.parse(stldatabuffer)
+                    mesh.geometry.dispose();
+                    mesh.geometry = stlfinal
+                    overlay.style.display = "none";
+                    gui.show()
+                });
+                document.addEventListener('primeData', () => {
+                    sendValuesToWorker(boatObject)
+                });
+
+				window.addEventListener( 'resize', onWindowResize );
+			}
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			function animate() {
+				render();
+			}
+			function render() {
+				const time = performance.now() * 0.001;
+
+				water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
+
+				renderer.render( scene, camera );
+			}
+
+        </script>
+    </head>
+    <body>
+        <div id="overlay">
+            <div id="text">Loading... Please wait.</div>
+        </div>
+    
+<script src="https://static.app/js/static.js" type="text/javascript"></script>
+</body>
+</html>
