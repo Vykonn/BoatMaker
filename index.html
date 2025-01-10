@@ -302,7 +302,7 @@
   	            var center = new THREE.Vector3();
   	            box.getCenter( center );
                     mesh.position.sub( center ); 
-		    mesh.position.y = 30
+		    mesh.position.y = 30 - center.y
                     overlay.style.display = "none";
                     gui.show()
                 });
