@@ -304,7 +304,10 @@
 		document.addEventListener('readyEvent', () => {
                     let stlfinal = loader.parse(stldatabuffer)
                     mesh.geometry.dispose();
-                    mesh.geometry = stlfinal
+		    let geometry2 = stlfinal
+		    geometry2 = BufferGeometryUtils.mergeVertices(geometry, 0.1);
+		    geometry2.computeVertexNormals(true);
+		    mesh.geometry = geometry2
 		    mesh.position.x = 0
 	            mesh.position.y = 0
 		    mesh.position.z = 0
