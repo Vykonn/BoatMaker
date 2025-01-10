@@ -62,6 +62,8 @@ self.onmessage = async (event) => {
         print(os.listdir('/mnt'))
         `)
         let result = pyodide.FS.readFile("/mnt/mesh.stl", { encoding: "binary" });
+        console.log(result)
+        console.log([result,false][0])
         self.postMessage([result, false]);
         }
         catch(err) {
