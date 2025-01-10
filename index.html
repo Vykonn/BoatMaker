@@ -62,6 +62,10 @@
                     console.error("Worker is in pain!");
                 };
                 worker.onmessage = (event) => {
+		    if (Array.isArray(event.data) == true) {
+		    	console.log(event.data[0])
+			overlay.style.display = "none";
+		    }
                     if (event.data == "startready") {
 	                    console.log("Preperation")
 	                    document.dispatchEvent(primeData)
@@ -252,9 +256,12 @@
                     Lsbm: -0.5,
                     Rsb: 0.110869206
 				}
-				sendValuesToWorker(boatObject)
-				const gui = new GUI();
-				gui.hide()
+		sendValuesToWorker(boatObject)
+		extravalues = {
+			Download: function() {console.log("download")}
+		}
+		const gui = new GUI();
+		gui.hide()
                 gui.add( boatObject, 'LOA' );
                 gui.add( boatObject, 'Lb' );
                 gui.add( boatObject, 'Ls' );
@@ -300,6 +307,7 @@
                 gui.add( boatObject, 'Bsb' );
                 gui.add( boatObject, 'Lsbm' );
                 gui.add( boatObject, 'Rsb' );
+		gui.add( extravalues, 'Download');
                 gui.onFinishChange( event => {
                     if(ready==true){sendValuesToWorker([boatObject, false])}
                     overlay.style.display = "block";
