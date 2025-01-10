@@ -64,6 +64,7 @@
                     else {
 			    if (event.data == false ){
 				    console.error("Something went wrong! Please change values.")
+				    document.dispatchEvent(readyEvent);
 			    }
 			    else {
 		                    stldata = event.data
