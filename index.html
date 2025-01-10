@@ -307,7 +307,7 @@
                     mesh.geometry.dispose();
 		    mesh.geometry = stlfinal
                     const count = Math.floor( mesh.geometry.attributes.position.count * 0.875 ); // number of vertices to remove
-		    mesh.geometry = modifier.modify( simplified.geometry, count );
+		    mesh.geometry = modifier.modify( mesh.geometry, count );
 		    mesh.geometry.computeVertexNormals(true);
 		    mesh.position.x = 0
 	            mesh.position.y = 0
