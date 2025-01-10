@@ -298,11 +298,14 @@
                     let stlfinal = loader.parse(stldatabuffer)
                     mesh.geometry.dispose();
                     mesh.geometry = stlfinal
+		    mesh.position.x = 0
+	            mesh.position.y = 0
+		    mesh.position.z = 0
 		    var box = new THREE.Box3().setFromObject( mesh );
   	            var center = new THREE.Vector3();
   	            box.getCenter( center );
                     mesh.position.sub( center ); 
-		    mesh.position.y = 30
+		    mesh.position.y = 30 - center.y
 		    console.log(center)
                     overlay.style.display = "none";
                     gui.show()
