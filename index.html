@@ -257,10 +257,14 @@
                     Rsb: 0.110869206
 				}
 		sendValuesToWorker(boatObject)
-		const extravalues = {
-			"Download STL": function() {console.log("download")}
-		}
 		const gui = new GUI();
+		const extravalues = {
+			"Download STL": function() {
+				sendValuesToWorker([boatObject, true])
+		     		overlay.style.display = "block";
+                     		gui.hide()
+			}
+		}
 		gui.hide()
                 gui.add( boatObject, 'LOA' );
                 gui.add( boatObject, 'Lb' );
