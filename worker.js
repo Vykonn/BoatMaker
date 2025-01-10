@@ -73,9 +73,12 @@ self.onmessage = async (event) => {
         cons = constraints > 0
         print(sum(cons)) # should be zero
         mesh = Hull.gen_stl(NUM_WL=200, PointsPerWL=1000, bit_AddTransom = 1, bit_AddDeckLid = 1, namepath = "/mnt/mesh")
+        mesh = pymesh.load_mesh("/mnt/mesh.stl")
+        mesh = fix_mesh(mesh, detail="medium")
+        pymesh.save_mesh("mesh2.stl", mesh, use_float=True)
         print(os.listdir('/mnt'))
         `)
-        let result = pyodide.FS.readFile("/mnt/mesh.stl", { encoding: "binary" });
+        let result = pyodide.FS.readFile("/mnt/mesh2.stl", { encoding: "binary" });
         self.postMessage([result, "download"]);
         }
         catch(err) {
