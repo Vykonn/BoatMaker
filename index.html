@@ -58,16 +58,21 @@
                 };
                 worker.onmessage = (event) => {
                     if (event.data == "startready") {
-                    console.log("Preperation")
-                    document.dispatchEvent(primeData)
+	                    console.log("Preperation")
+	                    document.dispatchEvent(primeData)
                     }
                     else {
-                    stldata = event.data
-                    console.log(stldata)
-                    stldatabuffer = stldata.buffer
-                    ready = true
-                    document.dispatchEvent(readyEvent);
-                    console.log("Confirmation from worker")
+			    if (event.data == false ){
+				    console.error("Something went wrong! Please change values.")
+			    }
+			    else {
+		                    stldata = event.data
+		                    console.log(stldata)
+		                    stldatabuffer = stldata.buffer
+		                    ready = true
+		                    document.dispatchEvent(readyEvent);
+		                    console.log("Confirmation from worker")
+			    }
                     }
                 };
             }
