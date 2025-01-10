@@ -41,7 +41,7 @@ self.onmessage = async (event) => {
         }
         catch(err) {
             let result = false
-            self.postMessage(result);
+            self.postMessage([result, false]);
         }
     }
     else {
@@ -62,7 +62,7 @@ self.onmessage = async (event) => {
         print(os.listdir('/mnt'))
         `)
         let result = pyodide.FS.readFile("/mnt/mesh.stl", { encoding: "binary" });
-        self.postMessage(result);
+        self.postMessage([result, false]);
         }
         catch(err) {
             let result = false
