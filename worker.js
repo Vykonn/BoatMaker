@@ -20,6 +20,7 @@ self.onmessage = async (event) => {
     pyodide.globals.set("string_data", JSON.stringify(event.data));
 
     //Real Stuff
+    try {
     pyodide.runPython(`
     import numpy as np
     import json
@@ -36,6 +37,10 @@ self.onmessage = async (event) => {
     print(os.listdir('/mnt'))
     `)
     let result = pyodide.FS.readFile("/mnt/mesh.stl", { encoding: "binary" });
+    }
+    catch(err) {
+        let result = false
+    }
     self.postMessage(result);
 
 
